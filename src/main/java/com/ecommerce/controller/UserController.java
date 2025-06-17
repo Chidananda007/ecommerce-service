@@ -19,7 +19,7 @@ public class UserController {
   @PostMapping("/new/signup")
   @ResponseBody
   @ResponseStatus(HttpStatus.CREATED)
-  public void createNewuser(@RequestBody UserDto.UserSignUpDto user) {
+  public void createNewUser(@RequestBody UserDto.UserSignUpDto user) {
     userService.createNewUser(user);
   }
 

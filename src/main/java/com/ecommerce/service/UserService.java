@@ -20,7 +20,10 @@ public class UserService {
 
   public void createNewUser(UserDto.UserSignUpDto user) {
 
-    Users existingUser = userRepository.findByUserName(user.userName());
+    var existingUser =
+        userRepository
+            .findByUserName(user.userName())
+            .orElseThrow(() -> new RuntimeException("User not found"));
     if (existingUser != null) {
       throw new RuntimeException("User with given username already exists");
     }
