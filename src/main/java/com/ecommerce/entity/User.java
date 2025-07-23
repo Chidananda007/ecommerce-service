@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Table
 @Entity
 @Setter
 @Getter
 @RequiredArgsConstructor
-public class Users {
+@Table(name = "users")
+public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,13 @@ public class Users {
   @Column(name = "user_last_name")
   private String userLastName;
 
-  @Column(name = "username")
+  @Column(name = "auth_user_id", unique = true, nullable = false)
+  private String authUserId;
+
+  @Column(name = "email", unique = true, nullable = false)
+  private String email;
+
+  @Column(name = "username", unique = true, nullable = false)
   private String userName;
 
   @Column(name = "password")
@@ -31,4 +37,7 @@ public class Users {
 
   @Column(name = "mobile_number")
   private Long mobileNumber;
+
+  @Enumerated(EnumType.STRING)
+  private RoleTemplate roleTemplate;
 }

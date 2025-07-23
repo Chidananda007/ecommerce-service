@@ -1,12 +1,15 @@
 package com.ecommerce.repository;
 
-import com.ecommerce.entity.Users;
+import com.ecommerce.entity.User;
 import java.util.Optional;
-import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepositroy extends JpaRepository<Users, Long> {
-  Optional<User> findByUserName(String userName);
+public interface UserRepositroy extends JpaRepository<User, Long> {
+  Optional<org.apache.catalina.User> findByUserName(String userName);
 
-  Optional<Users> findByUserNameAndPassword(String userName, String password);
+  Optional<User> findByUserNameAndPassword(String userName, String password);
+
+  Optional<User> findByAuthUserId(String authUserId);
+
+  Optional<User> findByEmail(String authUserId);
 }

@@ -2,7 +2,7 @@ package com.ecommerce.service;
 
 import com.ecommerce.entity.Orders;
 import com.ecommerce.entity.Products;
-import com.ecommerce.entity.Users;
+import com.ecommerce.entity.User;
 import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepositroy;
@@ -30,7 +30,7 @@ public class OrderService {
   private static final int DEFAULT_ETA = 3;
 
   public ResponseEntity<?> createOrder(OrderDto.OrderRequestDto order) {
-    Optional<Users> users =
+    Optional<User> users =
         userRepositroy.findByUserNameAndPassword(order.userName(), order.password());
     if (users.isEmpty()) {
       return new ResponseEntity<>("User Not Found", HttpStatus.NOT_FOUND);
@@ -44,7 +44,7 @@ public class OrderService {
     }
   }
 
-  public void selectProductsAndCreateOrder(OrderDto.OrderRequestDto order, Users users) {
+  public void selectProductsAndCreateOrder(OrderDto.OrderRequestDto order, User user) {
     List<Products> products =
         productRepository.findByProductCategory(order.psd().productCategory());
     if (products.isEmpty()) {
@@ -61,13 +61,13 @@ public class OrderService {
     Orders orders = new Orders();
     orders.setEta(DEFAULT_ETA);
     orders.setProducts(products);
-    orders.setUserId(users.getId());
+    orders.setUserId(user.getId());
     orders.setPaymentId(convertedPaymentId);
     orderRepository.save(orders);
   }
 
   public ResponseEntity<?> getAllOrders(OrderDto.OrderRequestDto getOrders) {
-    Optional<Users> users =
+    Optional<User> users =
         userRepositroy.findByUserNameAndPassword(getOrders.userName(), getOrders.password());
     if (users.isEmpty()) {
       return new ResponseEntity<>("User Not Found", HttpStatus.NOT_FOUND);

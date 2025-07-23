@@ -1,75 +1,87 @@
 package com.ecommerce.service;
 
-import com.ecommerce.entity.Users;
+import com.ecommerce.entity.User;
 import com.ecommerce.repository.UserRepositroy;
 import com.ecommerce.requestdto.UserDto;
 import com.ecommerce.responsedto.UserResponseDto;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-  @Autowired UserRepositroy userRepository;
+  private final UserRepositroy userRepository;
 
-  public void createNewUser(UserDto.UserSignUpDto user) {
+  private final PasswordEncoder passwordEncoder;
 
-    var existingUser =
-        userRepository
-            .findByUserName(user.userName())
-            .orElseThrow(() -> new RuntimeException("User not found"));
-    if (existingUser != null) {
-      throw new RuntimeException("User with given username already exists");
+  public void createNewUser(UserDto.UserSignUpRequest request) {
+
+    var userByUserName = userRepository.findByUserName(request.userName());
+    var userByEmail = userRepository.findByEmail(request.userName());
+    if (userByUserName.isPresent() || userByEmail.isPresent()) {
+      throw new RuntimeException("User with given username or email already exists");
     }
 
     try {
-      Users newUser = new Users();
-      newUser.setUserFirstName(user.userFirstName());
-      newUser.setUserLastName(user.userLastName());
-      newUser.setUserName(user.userName());
-      newUser.setPassword(user.password());
-      newUser.setMobileNumber(user.mobileNumber());
-      userRepository.save(newUser);
+      userRepository.save(buildUser(request, new User()));
     } catch (DataAccessException ex) {
-      throw new RuntimeException("Failed to create a new user", ex);
+      throw new RuntimeException(
+          "Failed to create a new user : %s ".formatted(ex.getMessage()), ex);
+    } catch (Exception e) {
+      throw new RuntimeException("Something went wrong : %s ".formatted(e.getMessage()), e);
     }
   }
 
-  public ResponseEntity<?> getUser(UserDto.UserFetch user) {
-    Optional<Users> u = userRepository.findByUserNameAndPassword(user.userName(), user.password());
+  public User buildUser(UserDto.UserSignUpRequest request, User user) {
+    user.setUserFirstName(request.userFirstName());
+    user.setUserLastName(request.userLastName());
+    user.setUserName(request.userName());
+    user.setPassword(passwordEncoder.encode(request.password()));
+    user.setEmail(request.email());
+    user.setAuthUserId(UUID.randomUUID().toString());
+    user.setMobileNumber(request.mobileNumber());
+    return user;
+  }
+
+  public ResponseEntity<?> getUser(UserDto.UserFetch request) {
+    Optional<User> optionalUser =
+        userRepository.findByUserNameAndPassword(request.userName(), request.password());
 
     try {
-      if (u.isPresent()) {
-        UserResponseDto.UserDetailsResponseDto userDetailsResponseDto =
-            UserResponseDto.UserDetailsResponseDto.builder()
-                .id(u.get().getId())
-                .userFirstName(u.get().getUserFirstName())
-                .userLastName(u.get().getUserLastName())
-                .userName(u.get().getUserName())
-                .mobileNumber(u.get().getMobileNumber())
-                .build();
-
-        return new ResponseEntity<>(userDetailsResponseDto, HttpStatus.OK);
-      } else {
-        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
-      }
+      optionalUser
+          .map(
+              user -> {
+                if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+                  throw new RuntimeException("Invalid password");
+                }
+                UserResponseDto.UserDetailsResponseDto userDetailsResponseDto =
+                    UserResponseDto.UserDetailsResponseDto.builder()
+                        .id(user.getId())
+                        .userFirstName(user.getUserFirstName())
+                        .userLastName(user.getUserLastName())
+                        .userName(user.getUserName())
+                        .mobileNumber(user.getMobileNumber())
+                        .build();
+                return new ResponseEntity<>(userDetailsResponseDto, HttpStatus.OK);
+              })
+          .orElseThrow(() -> new RuntimeException("User not found"));
     } catch (Exception e) {
-      e.printStackTrace();
-      return new ResponseEntity<>("Data not found", HttpStatus.NO_CONTENT);
+      throw new RuntimeException("Failed to fetch user : %s ".formatted(e.getMessage()), e);
     }
+    throw new RuntimeException("Failed to fetch user");
   }
 
   public ResponseEntity<List<UserResponseDto.UserDetailsResponseDto>> getAllUsers() {
-    List<Users> allUsers = userRepository.findAll();
+    List<User> allUsers = userRepository.findAll();
     List<UserResponseDto.UserDetailsResponseDto> userDetailsList = new ArrayList<>();
 
-    for (Users user : allUsers) {
+    for (User user : allUsers) {
       UserResponseDto.UserDetailsResponseDto userDetailsResponseDto =
           UserResponseDto.UserDetailsResponseDto.builder()
               .id(user.getId())

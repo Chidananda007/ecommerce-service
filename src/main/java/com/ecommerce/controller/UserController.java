@@ -11,25 +11,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping(path = "/amazon/user")
+@RequestMapping(path = "/ecommerce/users")
 public class UserController {
 
   @Autowired UserService userService;
 
-  @PostMapping("/new/signup")
+  @PostMapping("/signup")
   @ResponseBody
   @ResponseStatus(HttpStatus.CREATED)
-  public void createNewUser(@RequestBody UserDto.UserSignUpDto user) {
+  public void createNewUser(@RequestBody UserDto.UserSignUpRequest user) {
     userService.createNewUser(user);
   }
 
-  @GetMapping("/fetch")
+  @PostMapping("/login")
   @ResponseBody
   public ResponseEntity<?> getUser(@RequestBody UserDto.UserFetch user) {
     return userService.getUser(user);
   }
 
-  @GetMapping("/fetch/all")
+  @GetMapping
   @ResponseBody
   public ResponseEntity<List<UserResponseDto.UserDetailsResponseDto>> getAllUsers() {
     return userService.getAllUsers();
