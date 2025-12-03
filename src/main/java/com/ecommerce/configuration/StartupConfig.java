@@ -20,13 +20,14 @@ public class StartupConfig {
   public CommandLineRunner printH2ConsoleUrl() {
     return args -> {
       String h2ConsoleUrl = "http://localhost:" + serverPort + h2ConsolePath;
-      log.info(
+      System.out.println(
           "\n\n"
               + "==========================================\n"
-              + "H2 Console is available at: "
+              + "H2 Console is available at:\n"
               + h2ConsoleUrl
               + "\n"
               + "==========================================\n");
+      log.info("H2 Console URL: {}", h2ConsoleUrl);
     };
   }
 }

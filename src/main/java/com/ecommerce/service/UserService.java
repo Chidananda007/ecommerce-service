@@ -5,9 +5,16 @@ import com.ecommerce.entity.User;
 import com.ecommerce.repository.UserRepositroy;
 import com.ecommerce.requestdto.UserDto;
 import com.ecommerce.responsedto.UserResponseDto;
+import com.ecommerce.security.JwtConstants;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +24,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+
+  @Value("${jwt.tokenSecret}")
+  private String tokenSecret;
+
+  @Value("${jwt.validityInDays}")
+  private Long tokenExpiration;
 
   private final UserRepositroy userRepository;
 
@@ -64,10 +77,7 @@ public class UserService {
                 UserResponseDto.UserDetailsResponseDto userDetailsResponseDto =
                     UserResponseDto.UserDetailsResponseDto.builder()
                         .id(user.getId())
-                        .userFirstName(user.getUserFirstName())
-                        .userLastName(user.getUserLastName())
-                        .userName(user.getUserName())
-                        .mobileNumber(user.getMobileNumber())
+                        .accessToken(createJwtToken(user.getUserName()))
                         .build();
                 return new ResponseEntity<>(userDetailsResponseDto, HttpStatus.OK);
               })
@@ -75,6 +85,34 @@ public class UserService {
     } catch (Exception e) {
       throw new RuntimeException("Failed to fetch user : %s ".formatted(e.getMessage()), e);
     }
+  }
+
+  public String createJwtToken(String username) {
+    final User user =
+        userRepository
+            .findByUserName(username)
+            .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+    return getIdTokenForUser(user);
+  }
+
+  private String getIdTokenForUser(User user) {
+    var tokenSignInKey =
+        new SecretKeySpec(
+            Base64.getDecoder().decode(tokenSecret), SignatureAlgorithm.HS256.getJcaName());
+    var currentDate = Instant.now();
+    return Jwts.builder()
+        .setSubject(user.getAuthUserId())
+        .setId(String.valueOf(user.getId()))
+        .setIssuedAt(Date.from(currentDate))
+        .setExpiration(Date.from(currentDate.plus(tokenExpiration, ChronoUnit.DAYS)))
+        .claim(JwtConstants.SUB, user.getAuthUserId())
+        .claim(JwtConstants.MOBILE_NUMBER, user.getMobileNumber())
+        .claim(JwtConstants.FIRST_NAME, user.getUserFirstName())
+        .claim(JwtConstants.LAST_NAME, user.getUserLastName())
+        .claim(JwtConstants.ROLES, Collections.singletonList(user.getRoleTemplate()))
+        .claim(JwtConstants.EMAIL, user.getEmail())
+        .signWith(tokenSignInKey, SignatureAlgorithm.HS256)
+        .compact();
   }
 
   public ResponseEntity<List<UserResponseDto.UserDetailsResponseDto>> getAllUsers() {
@@ -89,6 +127,7 @@ public class UserService {
               .userLastName(user.getUserLastName())
               .userName(user.getUserName())
               .mobileNumber(user.getMobileNumber())
+              .accessToken(createJwtToken(user.getUserName()))
               .build();
       userDetailsList.add(userDetailsResponseDto);
     }

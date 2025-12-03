@@ -18,9 +18,9 @@
     <!-- Spring Framework logging -->
     <logger name="org.springframework.web" level="DEBUG"/>
     <logger name="org.springframework.security" level="DEBUG"/>
+    <logger name="org.springframework.boot" level="INFO"/>
     <logger name="org.hibernate" level="ERROR"/>
 
     <!-- Application logging -->
     <logger name="com.ecommerce" level="DEBUG"/>
 </configuration>
-

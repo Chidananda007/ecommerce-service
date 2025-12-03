@@ -25,3 +25,6 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n%ex{full}"
   exception-conversion-word: "%ex{full}"
   include-application-name: false
+jwt:
+  tokenSecret: KF/JLEjRhf+sAKdBCgG+p2yT3i90UfGNJjO/133SVTWGxVS9sAycAFn26rtJNAZXyPO3LDUE1BeK+JNvIDllbA==
+  validityInDays: 7
