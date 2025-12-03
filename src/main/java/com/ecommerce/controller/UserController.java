@@ -25,7 +25,7 @@ public class UserController {
 
   @PostMapping("/login")
   @ResponseBody
-  public ResponseEntity<?> getUser(@RequestBody UserDto.UserFetch user) {
+  public ResponseEntity<?> getUser(@RequestBody UserDto.UserLoginRequest user) {
     return userService.getUser(user);
   }
 

@@ -12,5 +12,5 @@ public record UserDto() {
       String email,
       @NonNull Long mobileNumber) {}
 
-  public record UserFetch(@NonNull String userName, @NonNull String password) {}
+  public record UserLoginRequest(@NonNull String userName, @NonNull String password) {}
 }

@@ -1,12 +1,13 @@
 package com.ecommerce.service;
 
+import com.ecommerce.entity.RoleTemplate;
 import com.ecommerce.entity.User;
 import com.ecommerce.repository.UserRepositroy;
 import com.ecommerce.requestdto.UserDto;
 import com.ecommerce.responsedto.UserResponseDto;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
   private final UserRepositroy userRepository;
@@ -21,18 +23,17 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   public void createNewUser(UserDto.UserSignUpRequest request) {
+    log.info("Creating new user with username: {}", request.userName());
 
     var userByUserName = userRepository.findByUserName(request.userName());
     var userByEmail = userRepository.findByEmail(request.userName());
     if (userByUserName.isPresent() || userByEmail.isPresent()) {
+      log.error("User with given username or email already exists: {}", request.userName());
       throw new RuntimeException("User with given username or email already exists");
     }
 
     try {
       userRepository.save(buildUser(request, new User()));
-    } catch (DataAccessException ex) {
-      throw new RuntimeException(
-          "Failed to create a new user : %s ".formatted(ex.getMessage()), ex);
     } catch (Exception e) {
       throw new RuntimeException("Something went wrong : %s ".formatted(e.getMessage()), e);
     }
@@ -46,15 +47,15 @@ public class UserService {
     user.setEmail(request.email());
     user.setAuthUserId(UUID.randomUUID().toString());
     user.setMobileNumber(request.mobileNumber());
+    user.setRoleTemplate(RoleTemplate.CUSTOMER);
     return user;
   }
 
-  public ResponseEntity<?> getUser(UserDto.UserFetch request) {
-    Optional<User> optionalUser =
-        userRepository.findByUserNameAndPassword(request.userName(), request.password());
+  public ResponseEntity<?> getUser(UserDto.UserLoginRequest request) {
+    Optional<User> optionalUser = userRepository.findByUserName(request.userName());
 
     try {
-      optionalUser
+      return optionalUser
           .map(
               user -> {
                 if (!passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -74,7 +75,6 @@ public class UserService {
     } catch (Exception e) {
       throw new RuntimeException("Failed to fetch user : %s ".formatted(e.getMessage()), e);
     }
-    throw new RuntimeException("Failed to fetch user");
   }
 
   public ResponseEntity<List<UserResponseDto.UserDetailsResponseDto>> getAllUsers() {

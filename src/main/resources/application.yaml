@@ -13,5 +13,15 @@ spring:
 
   h2:
     console:
-      path: /h2
+      path: /h2-console
       enabled: true
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.hibernate: ERROR
+    com.ecommerce: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n%ex{full}"
+  exception-conversion-word: "%ex{full}"
+  include-application-name: false
