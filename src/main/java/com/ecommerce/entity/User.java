@@ -1,5 +1,6 @@
 package com.ecommerce.entity;
 
+import com.ecommerce.utils.Model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Table(name = "users")
-public class User {
+public class User extends Model {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
