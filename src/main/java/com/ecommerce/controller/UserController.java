@@ -4,17 +4,17 @@ import com.ecommerce.requestdto.UserDto;
 import com.ecommerce.responsedto.UserResponseDto;
 import com.ecommerce.service.UserService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
+@RequiredArgsConstructor
 @RequestMapping(path = "/ecommerce/users")
 public class UserController {
 
-  @Autowired UserService userService;
+  private final UserService userService;
 
   @PostMapping("/signup")
   @ResponseBody

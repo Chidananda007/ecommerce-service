@@ -41,4 +41,6 @@ public class User extends Model {
 
   @Enumerated(EnumType.STRING)
   private RoleTemplate roleTemplate;
+
+  private Boolean isEmailSent;
 }

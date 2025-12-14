@@ -1,5 +1,7 @@
 package com.ecommerce.service;
 
+import com.ecommerce.common.EmailDto;
+import com.ecommerce.common.EmailService;
 import com.ecommerce.entity.RoleTemplate;
 import com.ecommerce.entity.User;
 import com.ecommerce.repository.UserRepositroy;
@@ -35,6 +37,8 @@ public class UserService {
 
   private final PasswordEncoder passwordEncoder;
 
+  private final EmailService emailService;
+
   public void createNewUser(UserDto.UserSignUpRequest request) {
     log.info("Creating new user with username: {}", request.userName());
 
@@ -44,12 +48,31 @@ public class UserService {
       log.error("User with given username or email already exists: {}", request.userName());
       throw new RuntimeException("User with given username or email already exists");
     }
-
     try {
-      userRepository.save(buildUser(request, new User()));
+      var savedUser = userRepository.save(buildUser(request, new User()));
+      var response = emailService.sendEmail(buildEmailRequest(savedUser));
+      if (Objects.nonNull(response) && "success".equalsIgnoreCase(response.status())) {
+        savedUser.setIsEmailSent(Boolean.TRUE);
+        userRepository.save(savedUser);
+      }
     } catch (Exception e) {
       throw new RuntimeException("Something went wrong : %s ".formatted(e.getMessage()), e);
     }
+  }
+
+  private EmailDto.EmailRequest buildEmailRequest(User user) {
+    String subject = "You are successfully registered!";
+    String body =
+        "Dear %s,\n\nThank you for signing up on our e-commerce platform. We're excited to have you on board!\n\nBest regards,\nE-Commerce Team"
+            .formatted(user.getUserFirstName());
+    return EmailDto.EmailRequest.builder()
+        .userEmail(user.getEmail())
+        .receiver(user.getEmail())
+        .name(String.format("%s %s", user.getUserFirstName(), user.getUserLastName()))
+        .subject(subject)
+        .mobile(Optional.ofNullable(user.getMobileNumber()).map(String::valueOf).orElse(null))
+        .message(body)
+        .build();
   }
 
   public User buildUser(UserDto.UserSignUpRequest request, User user) {

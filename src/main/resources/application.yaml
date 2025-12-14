@@ -30,3 +30,6 @@ logging:
 jwt:
   tokenSecret: KF/JLEjRhf+sAKdBCgG+p2yT3i90UfGNJjO/133SVTWGxVS9sAycAFn26rtJNAZXyPO3LDUE1BeK+JNvIDllbA==
   validityInDays: 7
+app:
+  email:
+    url: http://localhost:8080
