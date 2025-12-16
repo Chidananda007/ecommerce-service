@@ -21,4 +21,7 @@ public class Products {
   @Column private String productCategory;
 
   @Column private Double productPrice;
+
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  private User user;
 }

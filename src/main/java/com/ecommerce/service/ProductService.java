@@ -5,40 +5,48 @@ import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.requestdto.ProductDto;
 import com.ecommerce.responsedto.ProductResponseDto;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
-  @Autowired ProductRepository productRepository;
+  private final ProductRepository productRepository;
 
   public void createNewProduct(ProductDto.ProductCreateDto product) {
 
     Products productsSave = new Products();
-    productsSave.setProductName(product.productName());
+    productsSave.setProductName(product.title());
     productsSave.setProductCategory(product.productCategory());
     productsSave.setProductPrice(product.productPrice());
     productRepository.save(productsSave);
   }
 
-  public ResponseEntity<?> getProductById(Long productId) {
-    Optional<Products> p = productRepository.findById(productId);
+  public ResponseEntity<?> getProductById(Long user, Long productId) {
+    Optional<Products> optionalProduct = productRepository.findByIdAndUser(productId, user);
 
-    if (p.isPresent()) {
+    if (optionalProduct.isPresent()) {
+      var product = optionalProduct.get();
       ProductResponseDto.ProductDetailsResponseDto productDetailsResponseDto =
           ProductResponseDto.ProductDetailsResponseDto.builder()
-              .id(p.get().getId())
-              .productName(p.get().getProductName())
-              .productCategory(p.get().getProductCategory())
-              .productPrice(p.get().getProductPrice())
+              .id(product.getId())
+              .productName(product.getProductName())
+              .productCategory(product.getProductCategory())
+              .productPrice(product.getProductPrice())
               .build();
-
       return new ResponseEntity<>(productDetailsResponseDto, HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>("Product not found", HttpStatus.NO_CONTENT);
     }
+    return new ResponseEntity<>("Product not found", HttpStatus.NO_CONTENT);
   }
+
+  public ResponseEntity<?> getProducts(Long userId) {
+    return null;
+  }
+
+  public void updateProduct(Long userId) {}
+
+  public void deleteProductByUser(Long userId) {}
 }
