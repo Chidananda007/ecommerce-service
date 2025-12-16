@@ -41,8 +41,6 @@ public class SecurityConfig {
                         "/h2-console/**",
                         "/actuator/health/**")
                     .permitAll()
-                    .requestMatchers("/api/**", "/ecommerce/**")
-                    .authenticated()
                     .anyRequest()
                     .authenticated())
         .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
