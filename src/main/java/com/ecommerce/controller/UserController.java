@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/ecommerce/users")
+@RequestMapping(path = "/ecommerce/")
 public class UserController {
 
   private final UserService userService;
@@ -19,14 +19,14 @@ public class UserController {
   @PostMapping("/signup")
   @ResponseBody
   @ResponseStatus(HttpStatus.CREATED)
-  public void createNewUser(@RequestBody UserDto.UserSignUpRequest user) {
-    userService.createNewUser(user);
+  public ResponseEntity<?> userSignup(@RequestBody UserDto.UserSignUpRequest user) {
+    return userService.userSignup(user);
   }
 
   @PostMapping("/login")
   @ResponseBody
   public ResponseEntity<?> getUser(@RequestBody UserDto.UserLoginRequest user) {
-    return userService.getUser(user);
+    return userService.userLogin(user);
   }
 
   @GetMapping

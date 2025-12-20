@@ -39,7 +39,7 @@ public class UserService {
 
   private final EmailService emailService;
 
-  public void createNewUser(UserDto.UserSignUpRequest request) {
+  public ResponseEntity<?> userSignup(UserDto.UserSignUpRequest request) {
     log.info("Creating new user with username: {}", request.userName());
 
     var userByUserName = userRepository.findByUserName(request.userName());
@@ -55,6 +55,11 @@ public class UserService {
         savedUser.setIsEmailSent(Boolean.TRUE);
         userRepository.save(savedUser);
       }
+      return userLogin(
+          UserDto.UserLoginRequest.builder()
+              .userName(savedUser.getUserName())
+              .password(request.password())
+              .build());
     } catch (Exception e) {
       throw new RuntimeException("Something went wrong : %s ".formatted(e.getMessage()), e);
     }
@@ -87,7 +92,7 @@ public class UserService {
     return user;
   }
 
-  public ResponseEntity<?> getUser(UserDto.UserLoginRequest request) {
+  public ResponseEntity<?> userLogin(UserDto.UserLoginRequest request) {
     Optional<User> optionalUser = userRepository.findByUserName(request.userName());
 
     try {
