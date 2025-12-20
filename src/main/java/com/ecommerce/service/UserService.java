@@ -76,8 +76,8 @@ public class UserService {
   }
 
   public User buildUser(UserDto.UserSignUpRequest request, User user) {
-    user.setUserFirstName(request.userFirstName());
-    user.setUserLastName(request.userLastName());
+    user.setUserFirstName(request.firstName());
+    user.setUserLastName(request.lastName());
     user.setUserName(request.userName());
     user.setPassword(passwordEncoder.encode(request.password()));
     user.setEmail(request.email());

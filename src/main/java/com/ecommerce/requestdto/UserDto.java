@@ -5,8 +5,8 @@ import lombok.NonNull;
 public record UserDto() {
 
   public record UserSignUpRequest(
-      @NonNull String userFirstName,
-      @NonNull String userLastName,
+      @NonNull String firstName,
+      @NonNull String lastName,
       @NonNull String userName,
       @NonNull String password,
       String email,
